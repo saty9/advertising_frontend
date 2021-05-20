@@ -1,28 +1,48 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <DisplayElement :key="alternator" :src="items[i].src" :type="items[i].type" :y-t-ready="YTReady" v-on:finished="next"/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+//import Vue from "vue";
+import DisplayElement from "@/components/DisplayElement";
 
+//const displaytime = 3_000;
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    DisplayElement
+  },
+  props: {
+    YTReady: Boolean
+  },
+  data: function () {
+    return {
+      i: 0,
+      alternator: true,
+      items: [
+        {type: "YTV", src: "https://www.youtube-nocookie.com/embed/vDHtypVwbHQ"},
+        {type: "FRM", src: "https://stagsevenoaks.co.uk/"},
+      ]
+    }
+  },
+  methods: {
+    next: function () {
+      this.i = (this.i + 1 )%this.items.length;
+      this.alternator = !this.alternator;
+    }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+* {
+  padding: 0;
+  margin: 0;
+  background-color: black;
+
 }
+
+
 </style>
