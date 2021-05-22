@@ -1,7 +1,7 @@
 <template>
   <transition name="fade">
-    <DisplayImage v-if="type === 'image'" v-bind:src="src" v-on:finished="$emit('finished')"/>
-    <DisplayVideo v-if="type === 'video'" v-bind:src="src" v-on:finished="$emit('finished')"/>
+    <DisplayImage v-if="type === 'IMG'" v-bind:src="src" v-on:finished="$emit('finished')"/>
+    <DisplayVideo v-if="type === 'VID'" v-bind:src="src" v-on:finished="$emit('finished')"/>
     <DisplayYoutube v-if="type === 'YTV' && YTReady" v-bind:src="src" v-on:finished="$emit('finished')"/>
     <DisplayIFrame v-if="type === 'FRM'" v-bind:src="src" v-on:finished="$emit('finished')"/>
   </transition>

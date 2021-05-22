@@ -1,37 +1,54 @@
 <template>
   <div id="app">
-    <DisplayElement :key="alternator" :src="items[i].src" :type="items[i].type" :y-t-ready="YTReady" v-on:finished="next"/>
+    <Playlist :items="items" :interspersed="interspersed" :y-t-ready="YTReady"/>
   </div>
 </template>
 
 <script>
-//import Vue from "vue";
-import DisplayElement from "@/components/DisplayElement";
+import Playlist from "./components/Playlist";
+const SPECIFIC_SCREEN_VIEW_REGEX = /^\/screens\/(\d)+$/
+const SPECIFIC_PLAYLIST_VIEW_REGEX = /^\/playlist\/(\d)+$/
 
 //const displaytime = 3_000;
 export default {
   name: 'App',
   components: {
-    DisplayElement
+    Playlist,
   },
   props: {
     YTReady: Boolean
   },
   data: function () {
     return {
-      i: 0,
-      alternator: true,
       items: [
-        {type: "YTV", src: "https://www.youtube-nocookie.com/embed/vDHtypVwbHQ"},
+        //{type: "YTV", src: "https://www.youtube-nocookie.com/embed/vDHtypVwbHQ"},
         {type: "FRM", src: "https://stagsevenoaks.co.uk/"},
+        {type: "IMG", src: "/battery.png"},
+      ],
+      interspersed: [
+        {type: "YTV", src: "https://www.youtube-nocookie.com/embed/vDHtypVwbHQ"},
+        {type: "IMG", src: "/followup_resolved_alert.png"}
       ]
     }
   },
   methods: {
-    next: function () {
-      this.i = (this.i + 1 )%this.items.length;
-      this.alternator = !this.alternator;
-    }
+    playlistURL: function() {
+      let specific_playlist = SPECIFIC_PLAYLIST_VIEW_REGEX.exec(window.location.pathname);
+      if (specific_playlist) {
+        return `/api/playlist/${specific_playlist[1]}`
+      }
+      let specific_screen = SPECIFIC_SCREEN_VIEW_REGEX.exec(window.location.pathname);
+      if (specific_screen) {
+        return `/api/screens/${specific_screen[1]}`
+      }
+      return "/api/screens/"
+    },
+    getPlaylistFromURL: function(path) {
+      console.log(path)
+    },
+  },
+  mounted(){
+    this.getPlaylistFromURL(this.playlistURL())
   }
 }
 </script>
