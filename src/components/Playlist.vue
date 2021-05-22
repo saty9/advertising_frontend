@@ -34,10 +34,9 @@ export default {
   },
   computed: {
     current_is_playlist() {
-      return this.interspersed.length && (this.i % 2) || this.items.length === 0
+      return this.interspersed.length && ((this.i % 2) || this.items.length === 0)
     },
     current() {
-      console.warn("computing current")
       if (!this.interspersed.length){
         return this.items[this.i];
       }
