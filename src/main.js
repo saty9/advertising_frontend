@@ -22,3 +22,10 @@ window.onYouTubeIframeAPIReady = () => {
   console.log("onYouTubeIframeAPIReady");
   vueApp.initYoutube();
 };
+
+if('serviceWorker' in navigator) {
+  console.log("registering service worker")
+  navigator.serviceWorker.register('/service-worker.js');
+} else {
+  console.warn("cant start service worker")
+}
