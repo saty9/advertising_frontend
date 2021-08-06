@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Playlist :items="items" :interspersed="interspersed" :y-t-ready="YTReady"/>
+    <Playlist v-if="items.length || interspersed.length" :items="items" :interspersed="interspersed" :y-t-ready="YTReady"/>
   </div>
 </template>
 
