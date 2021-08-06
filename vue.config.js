@@ -1,4 +1,4 @@
-var SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin')
+const {GenerateSW} = require('workbox-webpack-plugin');
 
 module.exports = {
   devServer: {
@@ -20,16 +20,15 @@ module.exports = {
   },
   configureWebpack: {
     plugins: [
-      new SWPrecacheWebpackPlugin({
+      new GenerateSW({
         cacheId: 'my-vue-app',
-        filename: 'service-worker.js',
+        exclude: [/.*/],
         //staticFileGlobs: ['dist/**/*.{js,html,css}'],
-        minify: true,
         //stripPrefix: 'dist/',
         runtimeCaching: [
           {
             urlPattern: /\/media\/.*/,
-            handler: 'cacheFirst'
+            handler: 'CacheFirst'
           }
           ]
       })
