@@ -7,7 +7,7 @@
 <script>
 import axios from "axios"
 import Playlist from "./components/Playlist";
-const SPECIFIC_SCREEN_VIEW_REGEX = /^\/screens\/(\d+)$/
+const SPECIFIC_SCREEN_VIEW_REGEX = /^\/screen\/(\d+)$/
 const SPECIFIC_PLAYLIST_VIEW_REGEX = /^\/playlist\/(\d+)$/
 
 //const displaytime = 3_000;
