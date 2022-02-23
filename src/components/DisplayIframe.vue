@@ -3,16 +3,21 @@
 </template>
 
 <script>
-const displaytime = 3_000;
 
 export default {
   name: 'DisplayIFrame',
   props: {
-    src: String
+    src: String,
+    displaytime: {
+      type: Number,
+      default: 3_000
+    }
   },
   mounted() {
     let self = this;
-    window.setTimeout(()=>{self.$emit("finished")}, displaytime)
+    window.setTimeout(()=>{
+      self.$emit("finished")
+    }, this.displaytime)
   }
 }
 </script>

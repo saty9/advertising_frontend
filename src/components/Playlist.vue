@@ -1,6 +1,6 @@
 <template>
   <Playlist v-if="current_is_playlist" :key="alternator" :items="interspersed" :y-t-ready="YTReady" v-on:looped="next"/>
-  <DisplayElement v-else :key="alternator" :src="current.src" :type="current.type" :y-t-ready="YTReady" v-on:finished="next"/>
+  <DisplayElement v-else :key="alternator" :src="current.src" :type="current.type" :y-t-ready="YTReady" v-on:finished="next" :duration="(current.duration || 10) * 1000"/>
 </template>
 
 <script>

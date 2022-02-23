@@ -1,9 +1,9 @@
 <template>
   <transition name="fade">
-    <DisplayImage v-if="type === 'IMG'" v-bind:src="src" v-on:finished="$emit('finished')"/>
+    <DisplayImage v-if="type === 'IMG'" v-bind:src="src" v-on:finished="$emit('finished')" :displaytime="duration"/>
     <DisplayVideo v-if="type === 'VID'" v-bind:src="src" v-on:finished="$emit('finished')"/>
     <DisplayYoutube v-if="type === 'YTV' && YTReady" v-bind:src="src" v-on:finished="$emit('finished')"/>
-    <DisplayIFrame v-if="type === 'FRM'" v-bind:src="src" v-on:finished="$emit('finished')"/>
+    <DisplayIFrame v-if="type === 'FRM'" v-bind:src="src" v-on:finished="$emit('finished')" :displaytime="duration"/>
   </transition>
 </template>
 
@@ -19,7 +19,8 @@ export default {
   props: {
     type: String,
     src: String,
-    YTReady: Boolean
+    YTReady: Boolean,
+    duration: Number,
   }
 }
 </script>
