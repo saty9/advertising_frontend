@@ -1,5 +1,8 @@
 <template>
-  <video v-bind:src="usedSrc" v-on:ended="finished" autoplay/>
+  <div>
+    <video ref="vid" v-bind:src="usedSrc" v-on:ended="finished" :poster="poster" autoplay/>
+    <canvas ref="canvas" style="display: none" width="1920" height="1080"/>
+  </div>
 </template>
 
 <script>
@@ -12,11 +15,15 @@ export default {
   },
   data() {
     return {
-      usedSrc: this.src
+      usedSrc: this.src,
+      poster: undefined,
     }
   },
   methods: {
     finished() {
+      let context = this.$refs.canvas.getContext('2d');
+      context.drawImage(this.$refs.vid, 0, 0, 1920, 1080);
+      this.poster = this.$refs.canvas.toDataURL();
       this.usedSrc=""
       Vue.nextTick(() => this.$emit('finished'))
     }
