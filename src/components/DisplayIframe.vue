@@ -1,5 +1,5 @@
 <template>
-  <iframe v-bind:src="src"/>
+  <iframe v-bind:src="src" scrolling="no"/>
 </template>
 
 <script>
@@ -31,5 +31,6 @@ iframe {
   position: absolute;
   z-index: -10;
   border: 0;
+  overflow: hidden;
 }
 </style>
