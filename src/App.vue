@@ -57,14 +57,14 @@ export default {
         let change = response.data.current_playlist !== self.current_playlist;
         change = change || (response.data.playlist_last_updated !== self.playlist_last_updated);
         if (change) {
-          self.getPlaylistFromURL(self.playlistURL())
+          self.getPlaylistFromURL(self.playlistURL());
         }
       })
     }
   },
   mounted(){
-    this.getPlaylistFromURL(this.playlistURL())
-    this.polling = setInterval(this.checkForChanges,60_000)
+    this.getPlaylistFromURL(this.playlistURL());
+    this.polling = setInterval(this.checkForChanges,60000);
   },
   beforeDestroy () {
     clearInterval(this.polling)

@@ -10,7 +10,7 @@ export default {
     src: String,
     displaytime: {
       type: Number,
-      default: 3_000
+      default: 3000
     }
   },
   mounted() {
