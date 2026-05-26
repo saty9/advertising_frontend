@@ -1,6 +1,6 @@
 <template>
   <DisplayElement v-if="currentItem" :key="alternator" :src="currentItem.src" :type="currentItem.type"
-                  :y-t-ready="YTReady" v-on:finished="next"
+                  v-on:finished="next"
                   :duration="(currentItem.duration || 10) * 1000"/>
 </template>
 
@@ -61,7 +61,6 @@ export default {
   props: {
     items: {type: Array, default: () => []},
     interspersed: {type: Object, default: () => ({playlist: null, screen: null})},
-    YTReady: Boolean
   },
   data: function () {
     return {

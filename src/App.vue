@@ -2,7 +2,7 @@
   <div id="app">
     <Playlist v-if="items.length || hasInterspersed"
               :key="current_playlist + '|' + playlist_last_updated"
-              :items="items" :interspersed="interspersed" :y-t-ready="YTReady"/>
+              :items="items" :interspersed="interspersed"/>
   </div>
 </template>
 
@@ -17,9 +17,6 @@ export default {
   name: 'App',
   components: {
     Playlist,
-  },
-  props: {
-    YTReady: Boolean
   },
   data: function () {
     return {
