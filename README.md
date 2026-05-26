@@ -1,4 +1,4 @@
-# example_gpu_preserver
+# Advertising Frontend
 
 ## Project setup
 ```

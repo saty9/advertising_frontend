@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <Playlist v-if="items.length || interspersed.length" :items="items" :interspersed="interspersed" :y-t-ready="YTReady"/>
+    <Playlist v-if="items.length || hasInterspersed"
+              :key="current_playlist + '|' + playlist_last_updated"
+              :items="items" :interspersed="interspersed"/>
   </div>
 </template>
 
@@ -16,16 +18,19 @@ export default {
   components: {
     Playlist,
   },
-  props: {
-    YTReady: Boolean
-  },
   data: function () {
     return {
       items: [],
-      interspersed: [],
+      interspersed: {playlist: null, screen: null},
       current_playlist: -1,
       playlist_last_updated: "",
       polling: null,
+    }
+  },
+  computed: {
+    hasInterspersed() {
+      let i = this.interspersed;
+      return !!(i && ((i.playlist && i.playlist.items.length) || (i.screen && i.screen.items.length)))
     }
   },
   methods: {
@@ -44,7 +49,7 @@ export default {
       let self = this;
       axios.get(path).then((response) => {
         self.items = response.data.playlist;
-        self.interspersed = response.data.interspersed;
+        self.interspersed = response.data.interspersed || {playlist: null, screen: null};
         self.current_playlist = response.data.current_playlist;
         self.playlist_last_updated = response.data.playlist_last_updated;
       }).catch(err => {

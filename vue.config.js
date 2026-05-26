@@ -1,6 +1,12 @@
 const {GenerateSW} = require('workbox-webpack-plugin');
 
 module.exports = {
+  pages: {
+    index: {
+      entry: 'src/main.js',
+      title: 'Advertising Screens',
+    }
+  },
   devServer: {
     allowedHosts: [".ngrok.io", "127.0.0.1", "localhost", "192.168.1.211"],
     proxy: {

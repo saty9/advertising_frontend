@@ -1,10 +1,57 @@
 <template>
-  <Playlist v-if="current_is_playlist" :key="alternator" :items="interspersed" :y-t-ready="YTReady" v-on:looped="next"/>
-  <DisplayElement v-else :key="alternator" :src="current.src" :type="current.type" :y-t-ready="YTReady" v-on:finished="next" :duration="(current.duration || 10) * 1000"/>
+  <DisplayElement v-if="currentItem" :key="alternator" :src="currentItem.src" :type="currentItem.type"
+                  v-on:finished="next"
+                  :duration="(currentItem.duration || 10) * 1000"/>
 </template>
 
 <script>
 import DisplayElement from "@/components/DisplayElement";
+
+// A "stream" is just an object with a next() that returns items forever.
+// We build the playback order by composing three of them:
+//
+//   base   = the screen's own playlist, cycled endlessly
+//   stage1 = base with the PLAYLIST-level interspersed playlist mixed in,
+//            one every `rate` *base* items (so it behaves as though the
+//            screen-level interspersion isn't happening)
+//   stage2 = stage1 with the SCREEN-level interspersed playlist mixed in,
+//            one every `rate` *stage1* items (so the screen one always
+//            happens at its configured rate)
+//
+// Cursors live inside each stream's closure, so round-robin position
+// naturally persists across base loops instead of restarting every loop.
+// Example (playlist B rate 1, screen C rate 1): A, C, B, C, A, C, B, C, ...
+
+// Cycle `items` forever. Returns null when there is nothing to cycle.
+function cyclicStream(items) {
+  if (!items || items.length === 0) return null
+  let i = 0
+  return {
+    next() {
+      const x = items[i]
+      i = (i + 1) % items.length
+      return x
+    }
+  }
+}
+
+// Emit `rate` items from `base`, then one from `insert`, repeating.
+// With no `insert` stream the pipeline is just `base` unchanged.
+function intersperse(base, insert, rate) {
+  if (!insert) return base
+  const every = Math.max(1, rate || 1)
+  let sinceInsert = 0
+  return {
+    next() {
+      if (sinceInsert >= every) {
+        sinceInsert = 0
+        return insert.next()
+      }
+      sinceInsert += 1
+      return base.next()
+    }
+  }
+}
 
 export default {
   name: 'Playlist',
@@ -12,42 +59,55 @@ export default {
     DisplayElement
   },
   props: {
-    items: {type: Array, default: () =>[]},
-    interspersed: {type: Array, default: () => []},
-    YTReady: Boolean
+    items: {type: Array, default: () => []},
+    interspersed: {type: Object, default: () => ({playlist: null, screen: null})},
   },
   data: function () {
     return {
-      i: 0,
+      currentItem: null,
+      // Toggled on every item so DisplayElement remounts (via :key) and
+      // replays its fade/transition for the next item.
       alternator: true,
     }
   },
   methods: {
-    next: function () {
-      let old_i = this.i;
-      this.i = (this.i + 1 )%this.length;
-      if (old_i >= this.i) {
-        this.$emit('looped')
+    // Compose the playback pipeline once. App.vue remounts this component
+    // (keyed on playlist + last-updated) whenever the content changes, so
+    // there is no need to rebuild it on prop updates.
+    buildPipeline() {
+      const i = this.interspersed || {}
+
+      if (this.items && this.items.length) {
+        const playlist = i.playlist || {}
+        const screen = i.screen || {}
+        let pipeline = cyclicStream(this.items)
+        pipeline = intersperse(pipeline, cyclicStream(playlist.items), playlist.rate)
+        pipeline = intersperse(pipeline, cyclicStream(screen.items), screen.rate)
+        return pipeline
       }
-      this.alternator = !this.alternator;
+
+      // No base playlist: just cycle whatever interspersed items exist,
+      // with no further interspersion.
+      const fallback = [].concat(
+        i.playlist && i.playlist.items ? i.playlist.items : [],
+        i.screen && i.screen.items ? i.screen.items : []
+      )
+      return cyclicStream(fallback)
+    },
+    advance() {
+      this.currentItem = this.pipeline ? this.pipeline.next() : null
+    },
+    next() {
+      this.advance()
+      this.alternator = !this.alternator
     },
   },
-  computed: {
-    current_is_playlist() {
-      return this.interspersed.length && ((this.i % 2) || this.items.length === 0)
-    },
-    current() {
-      if (!this.interspersed.length){
-        return this.items[this.i];
-      }
-      if (this.i%2) {
-        return this.items[this.i]
-      }
-      return this.items[this.i/2]
-    },
-    length() {
-      return this.interspersed.length? this.items.length*2:this.items.length
-    }
+  created() {
+    // Non-reactive: a plain stream closure, not component state.
+    this.pipeline = this.buildPipeline()
+  },
+  mounted() {
+    this.advance()
   }
 }
 </script>
