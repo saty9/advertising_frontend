@@ -1,6 +1,6 @@
 <template>
   <div>
-    <video ref="vid" v-bind:src="usedSrc" v-on:ended="finished" autoplay/>
+    <video ref="vid" v-bind:src="usedSrc" v-on:ended="finished" autoplay muted/>
   </div>
 </template>
 
@@ -44,5 +44,16 @@ video {
   position: absolute;
   z-index: -10;
   object-fit: fill;
+}
+
+/* Chromium/WebKit native play overlay */
+video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
 }
 </style>
