@@ -1,6 +1,23 @@
 <template>
-  <div>
-    <video ref="vid" v-bind:src="usedSrc" v-on:ended="finished" autoplay/>
+  <div class="video-container">
+    <video
+      ref="vid"
+      :src="usedSrc"
+      autoplay
+      muted
+      playsinline
+      preload="auto"
+      @playing="started"
+      @timeupdate="timeUpdated"
+      @ended="finished"
+      @error="playbackFailed"
+    />
+
+    <!-- Only created on the iiyama WebView -->
+    <div
+      v-if="isWebView && showCover"
+      class="video-cover"
+    />
   </div>
 </template>
 
@@ -8,41 +25,149 @@
 import Vue from "vue";
 
 export default {
-  name: 'DisplayVideo',
+  name: "DisplayVideo",
+
   props: {
     src: String
   },
+
   data() {
     return {
-      usedSrc: this.src
-    }
+      usedSrc: this.src,
+      isWebView: false,
+      showCover: false,
+      finishing: false
+    };
   },
+
   methods: {
+    started() {
+      /*
+       * Wait for two render cycles before removing the cover.
+       * This gives the first decoded video frame time to appear.
+       */
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.showCover = false;
+        });
+      });
+    },
+
+    timeUpdated() {
+      const video = this.$refs.vid;
+
+      if (
+        !this.isWebView ||
+        !video ||
+        this.finishing ||
+        !Number.isFinite(video.duration)
+      ) {
+        return;
+      }
+
+      /*
+       * Put the cover back shortly before the video ends so the
+       * WebView's play logo cannot flash onto the screen.
+       */
+      const remaining = video.duration - video.currentTime;
+
+      if (remaining <= 0.15) {
+        this.showCover = true;
+      }
+    },
+
     finished() {
-      this.usedSrc=""
-      Vue.nextTick(() => this.$emit('finished'))
+      if (this.finishing) {
+        return;
+      }
+
+      this.finishing = true;
+      this.showCover = true;
+      this.usedSrc = "";
+
+      Vue.nextTick(() => {
+        this.$emit("finished");
+      });
+    },
+
+    playbackFailed(event) {
+      console.error("Video playback failed", event);
+      this.finished();
     }
   },
+
   mounted() {
-    const playPromise = this.$refs.vid.play()
-    const timeout = new Promise(resolve => setTimeout(() => {resolve("timeout")}, 10000))
-    Promise.race([playPromise, timeout]).then(result => {
-      if (result !== "timeout")
-        return;
-      console.warn("video playback start stalled")
-      Vue.nextTick(() => this.$emit('finished'))
-    })
+    /*
+     * iiSignage² includes the "wv" WebView marker in its user agent.
+     * Normal Linux browsers will not match this.
+     */
+    this.isWebView = /\bwv\b/i.test(navigator.userAgent);
+    this.showCover = this.isWebView;
+
+    const video = this.$refs.vid;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.controls = false;
+
+    const playPromise = video.play();
+
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(error => {
+        console.error("Video autoplay failed", error);
+        this.finished();
+      });
+    }
   }
-}
+};
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-video {
+.video-container {
+  position: fixed;
+  inset: 0;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+/*
+ * Keep the normal hardware-accelerated video fullscreen.
+ */
+video {
   position: absolute;
-  z-index: -10;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: fill;
+  background: #000;
+  z-index: 1;
+}
+
+/*
+ * This sits above the video only on the iiyama WebView during startup
+ * and immediately before the video ends.
+ */
+.video-cover {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/*
+ * Secondary attempt to suppress Chromium/WebView controls.
+ */
+video::-webkit-media-controls,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-overlay-play-button,
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
 }
 </style>
