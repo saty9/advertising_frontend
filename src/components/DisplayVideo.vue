@@ -13,9 +13,9 @@
       @error="playbackFailed"
     />
 
-    <!-- Only created on the iiyama WebView -->
+    <!-- Only shown when required by the Android WebView workaround -->
     <div
-      v-if="isWebView && showCover"
+      v-if="showCover"
       class="video-cover"
     />
   </div>
@@ -82,7 +82,12 @@ export default {
       }
 
       this.finishing = true;
-      this.showCover = true;
+
+      /*
+       * Restore the cover only on WebView devices.
+       * Normal browsers should never display it.
+       */
+      this.showCover = this.isWebView;
       this.usedSrc = "";
 
       Vue.nextTick(() => {
@@ -104,21 +109,10 @@ export default {
     this.isWebView = /\bwv\b/i.test(navigator.userAgent);
     this.showCover = this.isWebView;
 
-    const video = this.$refs.vid;
-
-    video.muted = true;
-    video.defaultMuted = true;
-    video.playsInline = true;
-    video.controls = false;
-
-    const playPromise = video.play();
-
-    if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch(error => {
-        console.error("Video autoplay failed", error);
-        this.finished();
-      });
-    }
+    this.$refs.vid.play().catch(error => {
+      console.error("Video autoplay failed", error);
+      this.finished();
+    });
   }
 };
 </script>
@@ -148,7 +142,7 @@ video {
 }
 
 /*
- * This sits above the video only on the iiyama WebView during startup
+ * This sits above the video on the Android WebView during startup
  * and immediately before the video ends.
  */
 .video-cover {
